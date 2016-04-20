@@ -2,6 +2,7 @@ require(readr)
 require(caret)
 
 setwd("F:/Kaggle/Homesite")
+set.seed(2016)
 train <- read_csv("./Data/train.csv")
 
 skf <- createFolds(train$QuoteConversion_Flag, k = 4, list = TRUE)
@@ -15,13 +16,9 @@ for(i in 1:4) {
   val <- train[idx,]
   ids <- val$QuoteNumber
   if (length(ids) < max.len) {
-    
-    ids <- c(ids, NA)
-    
+      ids <- c(ids, NA)
   }
-  
-  folds[[paste0("Fold_", i)]] <- ids
-  
+    folds[[paste0("Fold_", i)]] <- ids
 }
 
 folds$a <- NULL
