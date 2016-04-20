@@ -23,6 +23,7 @@ from keras.optimizers import Adagrad,SGD,Adadelta
 from keras.callbacks import Callback
 
 os.chdir("F:/Kaggle/Homesite")
+np.random.seed(112)
 
 need_normalize = True
 need_categorical = False
@@ -34,11 +35,9 @@ def load_data():
     
     train = pd.read_csv("Data/train.csv")
     test = pd.read_csv("Data/test.csv")
-    
     train["train_flag"] = 1
     test["train_flag"] = 0    
     test["QuoteConversion_Flag"] = -1
-    
     alldata = train.append(test, ignore_index = True)
     alldata.fillna(-1, inplace = True)    
     
@@ -55,8 +54,8 @@ def load_data():
     alldata["int_5"] = alldata["GeographicField11A"] - alldata["GeographicField13A"]
     alldata["int_6"] = alldata["GeographicField8A"] - alldata["GeographicField11A"]
     alldata.drop("Date", axis = 1, inplace = True)
-    cat_cols = [col for col in alldata.columns if alldata[col].dtype == "O"]
     
+    cat_cols = [col for col in alldata.columns if alldata[col].dtype == "O"]
     
     if need_categorical:
         cat_cols = [col for col in alldata.columns if alldata[col].dtype == "O"]    
