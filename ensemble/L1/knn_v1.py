@@ -12,20 +12,16 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.metrics import roc_auc_score
 from sklearn.neighbors import KNeighborsClassifier
 
-
 os.chdir("F:/Kaggle/Homesite")
 np.random.seed(135)
-
 
 def load_data():
     
     train = pd.read_csv("Data/train.csv")
     test = pd.read_csv("Data/test.csv")
-    
     train["train_flag"] = 1
     test["train_flag"] = 0    
     test["QuoteConversion_Flag"] = -1
-    
     alldata = train.append(test, ignore_index = True)
     alldata.fillna(-1, inplace = True)    
     
@@ -43,7 +39,6 @@ def load_data():
     alldata["int_6"] = alldata["GeographicField8A"] - alldata["GeographicField11A"]
     alldata.drop("Date", axis = 1, inplace = True)
     cat_cols = [col for col in alldata.columns if alldata[col].dtype == "O"]
-    
     
     if need_categorical:
         cat_cols = [col for col in alldata.columns if alldata[col].dtype == "O"]    
@@ -87,52 +82,54 @@ def load_data():
     pte = alldata[alldata.train_flag == 0]
     return ptr, pte
 
-##################
-need_categorical = False
-need_normalize = True
-fold_ids = pd.read_csv("The Quants/validation_quotes.csv")
 
-train, test = load_data()
-feature_names = [x for x in train.columns if x not in ["QuoteNumber", "QuoteConversion_Flag", "train_flag"]]
-knn_val = pd.DataFrame(columns = ["QuoteNumber", "knn_v1"])
-test_X = np.matrix(test[feature_names])
-
-for i in xrange(4):
-
-    print "\n--------------------------------------------"
-    print "------------- Fold %d -----------------------" %i
-    print "--------------------------------------------"
+if __name__ == '__main__':
     
-    val_ids = fold_ids.ix[:, i].dropna()
-    idx = train["QuoteNumber"].isin(list(val_ids))
+    need_categorical = False
+    need_normalize = True
+    fold_ids = pd.read_csv("The Quants/validation_quotes.csv")
     
-    trainingSet = train[~idx]
-    validationSet = train[idx]
+    train, test = load_data()
+    feature_names = [x for x in train.columns if x not in ["QuoteNumber", "QuoteConversion_Flag", "train_flag"]]
+    knn_val = pd.DataFrame(columns = ["QuoteNumber", "knn_v1"])
+    test_X = np.matrix(test[feature_names])
     
-    tr_X = np.matrix(trainingSet[feature_names])
-    tr_Y = np.array(trainingSet["QuoteConversion_Flag"])
-    val_X = np.matrix(validationSet[feature_names])
-    val_Y = np.array(validationSet["QuoteConversion_Flag"])
+    for i in xrange(4):
+    
+        print "\n--------------------------------------------"
+        print "------------- Fold %d -----------------------" %i
+        print "--------------------------------------------"
+        
+        val_ids = fold_ids.ix[:, i].dropna()
+        idx = train["QuoteNumber"].isin(list(val_ids))
+        
+        trainingSet = train[~idx]
+        validationSet = train[idx]
+        
+        tr_X = np.matrix(trainingSet[feature_names])
+        tr_Y = np.array(trainingSet["QuoteConversion_Flag"])
+        val_X = np.matrix(validationSet[feature_names])
+        val_Y = np.array(validationSet["QuoteConversion_Flag"])
+        
+        knn = KNeighborsClassifier(n_neighbors = 7,
+                                   weights = "uniform",
+                                   n_jobs = 11)
+        knn.fit(tr_X, tr_Y)
+        preds = knn.predict_proba(val_X)[:, 1]
+        print "\nAUC", roc_auc_score(val_Y, preds)
+        df = pd.DataFrame({"QuoteNumber" : validationSet["QuoteNumber"], "knn_v1" : preds})
+        knn_val = knn_val.append(df, ignore_index = True)
+        
+    knn_val.to_csv("The Quants/Validation Predictions/bishwarup_knn_1_validation.csv", index = False)    
+    
+    tr_X = np.matrix(train[feature_names])
+    tr_Y = np.array(train["QuoteConversion_Flag"])
     
     knn = KNeighborsClassifier(n_neighbors = 7,
                                weights = "uniform",
                                n_jobs = 11)
-    knn.fit(tr_X, tr_Y)
-    preds = knn.predict_proba(val_X)[:, 1]
-    print "\nAUC", roc_auc_score(val_Y, preds)
-    df = pd.DataFrame({"QuoteNumber" : validationSet["QuoteNumber"], "knn_v1" : preds})
-    knn_val = knn_val.append(df, ignore_index = True)
     
-knn_val.to_csv("The Quants/Validation Predictions/bishwarup_knn_1_validation.csv", index = False)    
-
-tr_X = np.matrix(train[feature_names])
-tr_Y = np.array(train["QuoteConversion_Flag"])
-
-knn = KNeighborsClassifier(n_neighbors = 7,
-                           weights = "uniform",
-                           n_jobs = 11)
-
-knn.fit(tr_X, tr_Y)
-tpreds = knn.predict_proba(test_X)[:, 1]
-test_df = pd.DataFrame({"QuoteNumber" : test["QuoteNumber"], "knn_v1" : tpreds})
-test_df.to_csv("The Quants/Test Predictions/bishwarup_knn_1_test.csv", index = False)
+    knn.fit(tr_X, tr_Y)
+    tpreds = knn.predict_proba(test_X)[:, 1]
+    test_df = pd.DataFrame({"QuoteNumber" : test["QuoteNumber"], "knn_v1" : tpreds})
+    test_df.to_csv("The Quants/Test Predictions/bishwarup_knn_1_test.csv", index = False)
