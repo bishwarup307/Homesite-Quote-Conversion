@@ -1,3 +1,4 @@
+# load required libraries
 require(readr)
 require(glmnet)
 require(Metrics)
@@ -14,7 +15,7 @@ feature.names <- names(train)[!names(train) %in% c("QuoteNumber", "QuoteConversi
 
 evalMatrix <- data.frame(QuoteNumber = numeric(), gnet_v1 = numeric())
 
-for(i in 2:4) {
+for(i in 1:4) {
   
   cat("\n---------------------------")
   cat("\n-------- CV: ", i, "-----------\n")
@@ -43,7 +44,6 @@ for(i in 2:4) {
   
 }
 write_csv(evalMatrix, "./The Quants/Validation Predictions/bishwarup_gnet_1_validation.csv")
-
 
 gnet_full <-  glmnet(as.matrix(train[, feature.names]),
                      as.factor(train$QuoteConversion_Flag),
