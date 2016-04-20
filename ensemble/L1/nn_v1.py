@@ -197,12 +197,11 @@ def fit_model():
         test_df = pd.DataFrame({"QuoteNumber" : test["QuoteNumber"], "nn_v1" : preds})
         return test_df
 
-##########################
+if __name__ == '__main__':
 
-train, test = load_data()
-nn_val = fit_model()
-nn_val.to_csv("The Quants/Validation Predictions/bishwarup_nn_1_validation.csv", index = False)
-
-need_validation = False
-nn_test = fit_model()
-nn_test.to_csv("The Quants/Test Predictions/bishwarup_nn_1_test.csv", index = False)
+    train, test = load_data()
+    nn_val = fit_model()
+    nn_val.to_csv("The Quants/Validation Predictions/bishwarup_nn_1_validation.csv", index = False)
+    need_validation = False
+    nn_test = fit_model()
+    nn_test.to_csv("The Quants/Test Predictions/bishwarup_nn_1_test.csv", index = False)
