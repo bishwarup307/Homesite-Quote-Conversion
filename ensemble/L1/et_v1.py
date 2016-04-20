@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jan 22 23:49:51 2016
-
 @author: Bishwarup
 """
 import os
@@ -9,7 +8,6 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.metrics import roc_auc_score
-
 
 print "Loading data .... "
 os.chdir("F:/Kaggle/Homesite")
